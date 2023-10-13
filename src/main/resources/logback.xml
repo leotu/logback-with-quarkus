@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- https://logback.qos.ch/manual/layouts.html#conversionWord -->
+<!-- https://loki4j.github.io/loki-logback-appender/#quick-start -->
+<!-- https://loki4j.github.io/loki-logback-appender/docs/configuration -->
+<configuration debug="false">
+
+	<appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+			<level>${quarkus.log.file.level:-INFO}</level>
+		</filter>
+		<file>${quarkus.log.file.path:-${user.dir}/logs/default.log}.logback</file>
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<fileNamePattern><![CDATA[${quarkus.log.file.path}.%d{yyyyMMdd}.logback]]></fileNamePattern>
+			<maxHistory>30</maxHistory>
+		</rollingPolicy>
+		<append>true</append>
+		<encoder>
+			<pattern><![CDATA[%d{yyyy-MM-dd'T'HH:mm:ss.SSS} %-5p [%t] [%C.%M\(\):%L] %msg%ex%n]]></pattern>
+			<charset>UTF-8</charset>
+		</encoder>
+	</appender>
+	
+	<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+		<filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+			<level>${quarkus.log.console.level:-INFO}</level>
+		</filter>
+		<encoder>
+			<pattern><![CDATA[%d{HH:mm:ss.SSS} %-5p [${quarkus.profile}] [%t] [%C{0}.%M\(\):%L] %msg%ex%n]]></pattern>
+			<charset>UTF-8</charset>
+		</encoder>
+	</appender>
+	
+	<appender name="LOKI" class="com.github.loki4j.logback.Loki4jAppender">
+		<batchMaxItems>500</batchMaxItems>
+		<batchTimeoutMs>15000</batchTimeoutMs>
+		<retryTimeoutMs>30000</retryTimeoutMs>
+		<verbose>false</verbose>
+		<http>
+			<url>http://loki:3100/loki/api/v1/push</url>
+			<connectionTimeoutMs>15000</connectionTimeoutMs>
+		</http>
+		<format>
+			<label>
+				<pattern>app=${quarkus.application.name},host=${HOSTNAME},port=${quarkus.http.port},level=%level,date=%d{yyyy-MM-dd},time=%d{HH}</pattern>
+			</label>
+			<message>
+				<pattern><![CDATA[%d{yyyy-MM-dd'T'HH:mm:ss.SSS} %-5p [%t] [%C.%M\(\):%L] %msg%ex%n]]></pattern>
+			</message>
+			<sortByTime>true</sortByTime>
+		</format>
+	</appender>
+
+    <root level="DEBUG">
+		<!-- <appender-ref ref="STDOUT" /> -->
+		<appender-ref ref="FILE" />
+		<appender-ref ref="LOKI" />
+	</root>
+</configuration>

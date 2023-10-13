@@ -1,0 +1,28 @@
+# https://github.com/quarkiverse/quarkus-logging-logback
+quarkus:
+  application:
+    name: logback-with-quarkus
+  http:
+    port: 8080
+    
+  console:
+    color: true # true => maybe cause logger "declaringClass & methodName" both null
+  log:
+    min-level: DEBUG
+    level: INFO
+    file:
+      enable: true
+      encoding: "UTF-8"
+      path: ${user.dir}/logs/${quarkus.application.name}.log # Note: without suffix ".log", -${quarkus.profile}
+      level: DEBUG
+      format: "%d{yyyy-MM-dd HH:mm:ss.SSS} %-5p [%t] [%C.%M():%L] %s%e%n"
+      rotation:
+        rotate-on-boot: false
+        max-file-size: 1024M
+        file-suffix: "_yyyy-MM-dd'.log'"
+        max-backup-index: 10
+
+    console:
+      enable: true
+      format: "%d{HH:mm:ss.SSS} %-5p [${quarkus.profile}] [%t] [%C{0.}.%M():%L] %s%e%n"
+      level: DEBUG
